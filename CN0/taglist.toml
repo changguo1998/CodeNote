@@ -1,23 +1,17 @@
 [shell]
 suffix = ".sh"
-process = "none"
 
 [julia]
 suffix = ".jl"
-process = "none"
 
 [julia-include]
 suffix = ".jl"
-process = "merge"
 
 [python]
 suffix = ".py"
-process = "none"
 
 [c-main]
 suffix = ".c"
-process = "none"
 
 [c-header]
 suffix  = ".h"
-process = "merge"

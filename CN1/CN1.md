@@ -1,5 +1,41 @@
 # CodeNote level 1
 
+## Type defines
+
+### Code Segment Type Defines
+
+```julia include
+struct CodeType
+    i::Int
+    tag::String
+    suffix::String
+    process::String
+end
+
+function CodeType(i::Int, tag::String, t::Dict)
+    return CodeType(i, tag, t["suffix"], t["process"])
+end
+
+const UNKNOWN_CODE_TYPE = 9999
+const CODE_TAG_SETTING = let
+    t = TOML.parsefile(joinpath(@__DIR__, "..", "taglist.toml"))
+    ks = collect(keys(t))
+    s = Vector{CodeType}(undef, length(ks))
+    for i = eachindex(ks)
+        s[i] = CodeType(i+1, ks[i], t[ks[i]])
+    end
+    s
+end
+
+TYPE_TAG_TO_SETTING = Dict{String,CodeType}()
+
+for ts = CODE_TAG_SETTING
+    TYPE_TAG_TO_SETTING[ts.tag] = ts
+end
+
+TYPE_LIST = map(ts -> ts.tag, CODE_TAG_SETTING)
+```
+
 ## Julia functions
 
 There might be different process, so for a type, we need to define

@@ -1,0 +1,35 @@
+[shell]
+suffix = ".sh"
+process = "none"
+executor = "bash"
+line_comment_prefix = "#"
+
+[julia]
+suffix = ".jl"
+process = "none"
+executor = "julia"
+line_comment_prefix = "#"
+
+[julia-include]
+suffix = ".jl"
+process = "merge"
+executor = "julia"
+line_comment_prefix = "#"
+
+[python]
+suffix = ".py"
+process = "none"
+executor = "python3"
+line_comment_prefix = "#"
+
+[c-main]
+suffix = ".c"
+process = "none"
+executor = "c"
+line_comment_prefix = "//"
+
+[c-header]
+suffix  = ".h"
+process = "merge"
+executor = "c"
+line_comment_prefix = "//"

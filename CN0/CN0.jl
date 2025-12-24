@@ -19,8 +19,8 @@ Commands and Arguments:
     -h, --help, help
         Prints this message.
 
-    tag /path/to/input_file.md /path/to/output_file.md
-        Tag the file with an integer. 0 text, 1 code boundary, 2 julia script, 3 shell, 9999 unknown code
+    mark /path/to/input_file.md /path/to/output_file.md
+        Mark the file with an integer. 0 plain text, 9999 unknown code, 1-?, code in different language
 
     parse /path/to/file.md /path/to/project
         Parse a Markdown file with embedded Julia codes into a directory.
@@ -45,11 +45,10 @@ struct CodeType
     i::Int
     tag::String
     suffix::String
-    process::String
 end
 
 function CodeType(i::Int, tag::String, t::Dict)
-    return CodeType(i, tag, t["suffix"], t["process"])
+    return CodeType(i, tag, t["suffix"])
 end
 
 const UNKNOWN_CODE_TYPE = 9999
@@ -71,7 +70,7 @@ end
 
 TYPE_LIST = map(ts -> ts.tag, CODE_TAG_SETTING)
 
-function tag_lines(lines::Vector{String})
+function mark_lines(lines::Vector{String})
     line_type = zeros(Int, length(lines))
 
     reference_type = 0
@@ -79,7 +78,7 @@ function tag_lines(lines::Vector{String})
         if startswith(lines[i], "```")
             line_type[i] = 1
             if iszero(reference_type)
-                tag_string = String(lines[i][4:end])
+                tag_string = String(replace(lines[i][4:end], ' '=>'-'))
                 if tag_string in TYPE_LIST
                     reference_type = TYPE_TAG_TO_SETTING[tag_string].i
                 else
@@ -95,7 +94,7 @@ function tag_lines(lines::Vector{String})
     return line_type
 end
 
-if ARGS[1] == "tag"
+if ARGS[1] == "mark"
     if length(ARGS) < 3
         @error "Not enough arguments for run command."
         print_help()
@@ -121,7 +120,7 @@ if ARGS[1] == "tag"
     lines_in_md_file = readlines(input_file_path)
 
     @info "Detect line type"
-    line_type = tag_lines(lines_in_md_file)
+    line_type = mark_lines(lines_in_md_file)
 
     @info "Write to output MD File: $output_file_path "
     open(output_file_path, "w") do io
@@ -157,7 +156,7 @@ if ARGS[1] == "parse"
     lines_in_md_file = readlines(input_file_path)
 
     @info "Detect line type"
-    line_type = tag_lines(lines_in_md_file)
+    line_type = mark_lines(lines_in_md_file)
 
     @info "Split code segments"
     flag_code_segment_beginning = falses(length(line_type))
@@ -198,9 +197,9 @@ if ARGS[1] == "parse"
         type_integer = line_type[code_segment_beginning[i]+1]
 
         if type_integer < UNKNOWN_CODE_TYPE
-            tmp_file_name = "$(input_file_name_without_ext)_segment_$(i)$(CODE_TAG_SETTING[type_integer-1].suffix)"
+            tmp_file_name = "$(input_file_name_without_ext)_segment_$(i).$(CODE_TAG_SETTING[type_integer-1].tag)$(CODE_TAG_SETTING[type_integer-1].suffix)"
         else
-            tmp_file_name = "$(input_file_name_without_ext)_segment_$i.code"
+            tmp_file_name = "$(input_file_name_without_ext)_segment_$i.unknown.code"
         end
         tmp_file_path = joinpath(target_project_dir, tmp_file_name)
         @info "    $tmp_file_name"
